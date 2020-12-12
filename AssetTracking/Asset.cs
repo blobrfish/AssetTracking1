@@ -8,12 +8,13 @@ using System.Collections.Generic;
 namespace AssetTracking
 {
 
-    public abstract class Asset
+    public class Asset
     {
+        public int Id { get; private set; }
         public string ModelName { get; private set; }
         private readonly int LifeTimeInYears = 3;
         public DateTime PurchaseDate { get; set; }
-        private decimal priceInUsd;
+        public decimal PriceInUsd { get; private set; }
 
         private bool LifeTimeLeft(int months)
         {
@@ -32,14 +33,14 @@ namespace AssetTracking
 
         public string ToString(string localCurrencyCode, decimal conversionRateToLocalCurrency)
         {
-            return string.Format(" {0} {1} Price : {2} {3}", this.GetType().Name, this.ModelName, Convert.ToInt32(conversionRateToLocalCurrency * this.priceInUsd), localCurrencyCode);
+            return string.Format(" {0} {1} Price : {2} {3}", this.GetType().Name, this.ModelName, Convert.ToInt32(conversionRateToLocalCurrency * this.PriceInUsd), localCurrencyCode);
         }
 
         public Asset(string modelName, DateTime purchaseDate, decimal priceInUsd)
         {
             this.ModelName = modelName;
             this.PurchaseDate = purchaseDate;
-            this.priceInUsd = priceInUsd;
+            this.PriceInUsd = priceInUsd;
         }
     }
 

@@ -12,7 +12,7 @@ namespace AssetTracking
 
     public class AppDbContext :DbContext  //IdentityDbContext<Common.ApplicationUser> //DbContext
     {
-        private const string ConnectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog=AssetTrackingApp;Integrated Security=True";
+        public const string ConnectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog=AssetTrackingApp;Integrated Security=True";
         public DbSet<DataAccess.Office> Offices { get; set; }
         public DbSet<DataAccess.Asset> Assets { get; set; }
         public DbSet<DataAccess.AssetType> AssetTypes { get; set; }

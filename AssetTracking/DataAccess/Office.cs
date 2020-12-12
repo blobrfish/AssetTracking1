@@ -13,13 +13,12 @@ namespace AssetTracking.DataAccess
         public ICollection<Asset> Assets { get; set; }
     }
 
-
     public class OfficeConfig : IEntityTypeConfiguration<Office>
     {
         public void Configure(EntityTypeBuilder<Office> builder)
         {
             builder.HasKey(p => p.Id);
-            builder.HasMany(o => o.Assets).WithOne().HasForeignKey(a => a.OfficeId);
+            builder.HasMany(o => o.Assets).WithOne().HasForeignKey(a => a.OfficeId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -12,7 +12,8 @@ namespace AssetTracking.DataAccess
         public DateTime PurchaseDate { get; set; }
         public decimal PriceInUsd { get; set; }
         public int OfficeId { get; set; }
-        public Office Office { get; set; }
+        public AssetType AssetType { get; set; }
+        public int AssetTypeId { get; set; }
     }
 
     public class AssetConfig : IEntityTypeConfiguration<Asset>
@@ -20,6 +21,7 @@ namespace AssetTracking.DataAccess
         public void Configure(EntityTypeBuilder<Asset> builder)
         {
             builder.HasKey(p => p.Id);
+            builder.HasOne(a => a.AssetType).WithMany().HasForeignKey(a => a.AssetTypeId).OnDelete(DeleteBehavior.Cascade);
            
         }
     }

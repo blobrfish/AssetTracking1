@@ -18,7 +18,7 @@ namespace AssetTracking
         private readonly string UrlForCurrencyRates = "https://api.exchangeratesapi.io/latest?base=USD";
         private IEnumerable<Asset> assets;
         public IEnumerable<Asset> Assets => this.assets.OrderBy(a => a.PurchaseDate);
-        public void PrintAssetsToConsole()
+        public void WriteAsset()
         {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.WriteLine(this.Location);
