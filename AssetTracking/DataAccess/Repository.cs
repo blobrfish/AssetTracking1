@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-
+using Microsoft.EntityFrameworkCore;
 namespace AssetTracking.DataAccess
 {
     public class Repository
@@ -14,49 +14,55 @@ namespace AssetTracking.DataAccess
             DBContext = new AppDbContext();
         }
 
-        public IEnumerable<AssetTracking.Office> GetOffices()
-        {
-            return DBContext.Offices.Select(o => new AssetTracking.Office());
-        }
-
         public IEnumerable<AssetTracking.Office> AllCompanyAssets()
         {
-            return DBContext.Offices.Select(o => new AssetTracking.Office( o.Location, 
-                o.Assets.Select(a => new AssetTracking.Asset(  a.Model,a.PurchaseDate, a.PriceInUsd))
-                ,o.LocalCurrencyCode));
+            return DBContext.Offices.Include(o => o.Assets).Select(o => new AssetTracking.Office( o.Location, o.LocalCurrencyCode,
+                o.Assets.Select(a => new AssetTracking.Asset(a.Id, a.AssetTypeId, a.Model,a.PurchaseDate, a.PriceInUsd))
+                ));
         }
 
-        public void AddAsset(Office office, AssetTracking.Asset newAsset)
+        public IEnumerable<AssetTracking.Office> AllOffices()
         {
-            var existingOffice  = DBContext.Offices.Where(o => o.Id == office.Id).FirstOrDefault();
-            existingOffice.Assets.Add(new DataAccess.Asset { Model = newAsset.ModelName,  PriceInUsd = newAsset.PriceInUsd});
+            return DBContext.Offices.Select(o => new AssetTracking.Office(o.Id, o.Location));
+        }
+
+        public IEnumerable<AssetTracking.AssetType> AllAssetTypes()
+        {
+            return DBContext.AssetTypes.Select(aT => new AssetTracking.AssetType(aT.Id, aT.Name));
+        }
+
+        public void AddAsset(int officeId, AssetTracking.Asset newAsset)
+        {
+            var existingOffice  = DBContext.Offices.Include(o => o.Assets).Where(o => o.Id == officeId).FirstOrDefault();
+            existingOffice.Assets.Add(new DataAccess.Asset { Model = newAsset.ModelName,  PriceInUsd = newAsset.PriceInUsd , PurchaseDate = newAsset.PurchaseDate, AssetTypeId = newAsset.TypeId });
             DBContext.SaveChanges();
         }
 
-        public void AddOffice(Office office)
+        public void AddOffice(AssetTracking.Office office)
         {
              DBContext.Offices.Add(new DataAccess.Office { Location = office.Location, LocalCurrencyCode = office.LocalCurrencyCode });
              DBContext.SaveChanges();
         }
 
-        public void DeleteAsset(Asset asset)
+        public void DeleteOffice(int id)
         {
-            var assetToDelete = DBContext.Assets.Where(a => a.Id == asset.Id).FirstOrDefault();
-            if(assetToDelete != null)
-            {
-                DBContext.Assets.Remove(assetToDelete);
-                DBContext.SaveChanges();
-            }
-        }
-
-        public void DeleteOffice(Office office)
-        {
-            var assetToDelete = DBContext.Offices.Where(a => a.Id == office.Id).FirstOrDefault();
-            if (assetToDelete != null)
+            var office = DBContext.Offices.Where(a => a.Id == id).FirstOrDefault();
+            if (office != null)
             {
                 DBContext.Offices.Remove(office);
                 DBContext.SaveChanges();
             }
         }
+
+        public void DeleteAsset(int id)
+        {
+            var asset = DBContext.Assets.Where(a => a.Id == id).FirstOrDefault();
+            if (asset != null)
+            {
+                DBContext.Assets.Remove(asset);
+                DBContext.SaveChanges();
+            }
+        }
     }
-}
+    }
+

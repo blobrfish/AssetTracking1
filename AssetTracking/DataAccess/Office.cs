@@ -19,6 +19,8 @@ namespace AssetTracking.DataAccess
         {
             builder.HasKey(p => p.Id);
             builder.HasMany(o => o.Assets).WithOne().HasForeignKey(a => a.OfficeId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasData(new Office { Id =1, Location = "London",  LocalCurrencyCode= "GBP" });
+            builder.HasData(new Office { Id = 2, Location = "New York", LocalCurrencyCode = "USD" });
         }
     }
 }

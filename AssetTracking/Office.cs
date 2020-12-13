@@ -11,21 +11,24 @@ namespace AssetTracking
 {
     public class Office
     {
+        public int Id { get; private set; }
      
         static HttpClient client = new HttpClient();
         public string Location { get; private set; }
-        private readonly string localCurrencyCode;
+        public readonly string LocalCurrencyCode;
         private readonly string UrlForCurrencyRates = "https://api.exchangeratesapi.io/latest?base=USD";
-        private IEnumerable<Asset> assets;
-        public IEnumerable<Asset> Assets => this.assets.OrderBy(a => a.PurchaseDate);
+        public IEnumerable<Asset> Assets { get; private set; }
+        //public IEnumerable<Asset> Assets => this.assets.OrderBy(a => a.PurchaseDate);
         public void WriteAsset()
         {
             Console.BackgroundColor = ConsoleColor.Blue;
             Console.WriteLine(this.Location);
             Console.BackgroundColor = ConsoleColor.Black;
             foreach (var a in this.Assets)
-                a.PrintToConsole(this.localCurrencyCode, GetConversionRateForLocalCurrency().Result);
+                a.PrintToConsole(this.LocalCurrencyCode, GetConversionRateForLocalCurrency().Result);
         }
+
+
 
         public async Task<decimal> GetConversionRateForLocalCurrency()
         {
@@ -33,19 +36,28 @@ namespace AssetTracking
             var content = response.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(content.Result);
             var rates = JsonConvert.DeserializeObject<Dictionary<string, decimal>>(data["rates"].ToString());
-            var rate = rates[localCurrencyCode];
+            var rate = rates[LocalCurrencyCode.ToUpper()];
             return rate;
         }
 
-        public Office(string location, IEnumerable<Asset> assets, string localCurrencyCode)
+        public Office(string location, string localCurrencyCode)
         {
             this.Location = location;
-            this.assets = assets;
-            this.localCurrencyCode = localCurrencyCode;
+            this.LocalCurrencyCode = localCurrencyCode;
         }
-        public Office()
+
+        public Office(int id, string location)
         {
-         
+            this.Id = id;
+            this.Location = location;
         }
+
+        public Office(string location, string localCurrencyCode, IEnumerable<AssetTracking.Asset> assets) :this(location, localCurrencyCode)
+        {
+            this.Location = location;
+            this.LocalCurrencyCode = localCurrencyCode;
+            this.Assets = assets;
+        }
+        
     }
 }

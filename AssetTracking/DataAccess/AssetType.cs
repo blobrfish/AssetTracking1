@@ -16,7 +16,8 @@ namespace AssetTracking.DataAccess
         public void Configure(EntityTypeBuilder<AssetType> builder)
         {
             builder.HasKey(p => p.Id);
-
+            builder.HasData(new AssetType { Id = 1, Name = "Laptop computer" });
+            builder.HasData(new AssetType { Id = 2, Name = "Mobile phone" });
         }
     }
 }
