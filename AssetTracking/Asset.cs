@@ -47,6 +47,7 @@ namespace AssetTracking
 
         public Asset(int typeId, string modelName, DateTime purchaseDate, decimal priceInUsd)
         {
+            this.TypeId = typeId;
             this.ModelName = modelName;
             this.PurchaseDate = purchaseDate;
             this.PriceInUsd = priceInUsd;
