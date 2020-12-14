@@ -6,32 +6,106 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using System.IO;
+using AssetTracking.DataAccess;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
+
 namespace AssetTracking
 {
-    partial class Program : IDesignTimeDbContextFactory<AppDbContext>
+    partial class Program : IDesignTimeDbContextFactory<DataAccess.AppDbContext>
     {
         private static DataAccess.Repository Repository;
-
+        public static ServiceCollection Services;
         static void Main(string[] args)
         {
+            
+            Services = new ServiceCollection();
+            Services.AddDbContext<AppDbContext>(
+           options =>
+           {
+               options.UseSqlServer(AppDbContext.ConnectionString);
+           });
+
+            // Authentification
+            Services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                // Configure identity options
+                options.Password.RequiredLength = 6;
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredUniqueChars = 1;
+                options.Password.RequireNonAlphanumeric = false;
+
+
+            })
+                .AddEntityFrameworkStores<AppDbContext>();
             Repository = new DataAccess.Repository();
-            if(LogIn())
+
+            PageLogin();
+
+        }
+
+
+
+
+        public static void PageLogin()
+        {
+            Header("Login");
+            Console.WriteLine("Enter n if you want to register as new user");
+
+            Console.WriteLine("Enter user name");
+            var nameInput = Console.ReadLine();
+            if (nameInput == "n")
+            {
+                Console.Clear();
+                PageRegisterNewUser();
+            }
+            Console.WriteLine("Enter password");
+            var passwordInput = Console.ReadLine();
+            bool isSuccesful = Repository.CheckLoginCredentials(nameInput, passwordInput);
+            if(isSuccesful)
             {
                 PageMainMenu();
             }
-               //PrintOfficeAssetsToConsole(Offices);
+            else
+            {
+                Console.WriteLine("Username or password was incorrect");
+                Console.ReadLine();
+                Console.Clear();
+                PageLogin();
+            }
+            
         }
 
-        private static bool LogIn()
+        public static void PageRegisterNewUser()
         {
-            return true;
-            //Console.Clear();
-
-            //Console.ForegroundColor = ConsoleColor.Green;
-            //Console.WriteLine();
-            //Console.WriteLine(text.ToUpper());
-            //Console.WriteLine();
+            Header("Register new user");
+            Console.WriteLine("Enter c if you want to cancel registration");
+            Console.WriteLine("Enter user name");
+            var nameInput = Console.ReadLine();
+            if (nameInput == "c")
+            {
+                Console.Clear();
+                PageLogin();
+            }
+            Console.WriteLine("Enter password");
+            var passwordInput = Console.ReadLine();
+            bool isSuccesful = Repository.CreateUser(nameInput, passwordInput);
+            if (!isSuccesful)
+            {
+                Console.WriteLine("Registration failed");
+                Console.ReadLine();
+                Console.Clear();
+                PageRegisterNewUser();
+            }
+            Console.WriteLine("Registration was created succesfully");
+            Console.ReadLine();
+            PageLogin();
         }
+
+       
         private static void PageMainMenu()
         {
             Header("Huvudmeny");
@@ -44,6 +118,10 @@ namespace AssetTracking
             Console.WriteLine("c) Delete an office");
             Console.WriteLine("d) Add a new asset");
             Console.WriteLine("e) Delete an asset");
+            Console.WriteLine("f) Add a new asset type");
+            Console.WriteLine("g) Delete asset type");
+            Console.WriteLine("h) Logout");
+
 
             ConsoleKey command = Console.ReadKey(true).Key;
 
@@ -56,12 +134,20 @@ namespace AssetTracking
             if (command == ConsoleKey.C)
                 PageDeleteOffice();
 
-
             if (command == ConsoleKey.D)
                 PageAddAsset();
 
             if (command == ConsoleKey.E)
                 PageDeleteAsset();
+
+            if (command == ConsoleKey.F)
+                PageAddNewAssetType();
+
+            if (command == ConsoleKey.G)
+                PageDeleteAssetType();
+
+            if (command == ConsoleKey.H)
+                Logout();
         }
 
        
@@ -79,9 +165,10 @@ namespace AssetTracking
             Console.WriteLine();
         }
 
-        private bool LogOut()
+        private static void Logout()
         {
-            return true;
+            Console.Clear();
+            PageLogin();
         }
 
         public static void PageReadAllCompanyAssets()
@@ -110,6 +197,14 @@ namespace AssetTracking
             var newOffice = new Office(locationInput, localCurrencyCodeInput);
             Repository.AddOffice(newOffice);
         }
+
+        public static void PageAddNewAssetType()
+        {
+            Console.WriteLine("Enter the name");
+            var nameInput = Console.ReadLine();
+            var newAssetType = new AssetType(nameInput);
+            Repository.AddAssetType(newAssetType);
+        }
         public static void PageAddAsset()
         {
             Console.WriteLine(string.Format("Enter the id of the office you want to add an asset to"));
@@ -129,7 +224,7 @@ namespace AssetTracking
             Console.WriteLine("Enter purchase date in format YYYY-MM-DD or leave it empty for todays date");
             var purchaseDateInput = Console.ReadLine() == string.Empty ? DateTime.Today : Convert.ToDateTime(Console.ReadLine());
 
-            var asset=    new AssetTracking.Asset(assetTypeIdInput, modelNameInput, purchaseDateInput, priceInDollarsInput);
+            var asset= new AssetTracking.Asset(assetTypeIdInput, modelNameInput, purchaseDateInput, priceInDollarsInput);
             Repository.AddAsset(officeIdInput, asset);
         }
 
@@ -141,6 +236,15 @@ namespace AssetTracking
             Console.WriteLine(string.Format("Enter the id of the asset you want to delete"));
             var idInput = Convert.ToInt32(Console.ReadLine());
             Repository.DeleteAsset(idInput);
+        }
+
+        public static void PageDeleteAssetType()
+        {
+
+            PageReadAllCompanyAssets();
+            Console.WriteLine(string.Format("Enter the id of the asset type you want to delete"));
+            var idInput = Convert.ToInt32(Console.ReadLine());
+            Repository.DeleteAssetType(idInput);
         }
 
 
@@ -179,5 +283,39 @@ namespace AssetTracking
         //    }
         //}
     }
+
+    public interface IUserCreationService
+    {
+        Task CreateUser();
+    }
+
+
+    //public class UserCreationService : IUserCreationService
+    //{
+    //    public readonly UserManager<ApplicationUser> UserManager;
+
+    //    public UserCreationService(UserManager<ApplicationUser> userManager)
+    //    {
+    //        this.userManager = userManager;
+    //    }
+
+    //    public async Task CreateUser()
+    //    {
+    //        var user = new ApplicationUser { UserName = "TestUser", Email = "test@example.com" };
+    //        var result = await this.userManager.CreateAsync(user, "123456");
+
+    //        if (result.Succeeded == false)
+    //        {
+    //            foreach (var error in result.Errors)
+    //            {
+    //                Console.WriteLine(error.Description);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Console.WriteLine("Done.");
+    //        }
+    //    }
+    //}
 }
 

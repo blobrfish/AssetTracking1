@@ -14,5 +14,9 @@ namespace AssetTracking
             this.Id = id;
             this.Name = name;
         }
+        public AssetType(string name)
+        {
+            this.Name = name;
+        }
     }
 }

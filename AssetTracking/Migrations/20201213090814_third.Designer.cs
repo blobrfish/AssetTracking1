@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AssetTracking.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(DataAccess.AppDbContext))]
     [Migration("20201213090814_third")]
     partial class third
     {

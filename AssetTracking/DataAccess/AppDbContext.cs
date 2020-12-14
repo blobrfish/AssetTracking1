@@ -5,17 +5,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 using AssetTracking.DataAccess;
+using Microsoft.IdentityModel;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-
-namespace AssetTracking
+namespace AssetTracking.DataAccess
 {
-
-    public class AppDbContext :DbContext  //IdentityDbContext<Common.ApplicationUser> //DbContext
+    public class AppDbContext :  IdentityDbContext<ApplicationUser> //DbContext
     {
         public const string ConnectionString = @"Data Source=(local)\SQLEXPRESS;Initial Catalog=AssetTrackingApp;Integrated Security=True";
         public DbSet<DataAccess.Office> Offices { get; set; }
         public DbSet<DataAccess.Asset> Assets { get; set; }
         public DbSet<DataAccess.AssetType> AssetTypes { get; set; }
+        //public DbSet<DataAccess.ApplicationUser> ApplicationUsers { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
