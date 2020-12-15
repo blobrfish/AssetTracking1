@@ -38,9 +38,6 @@ namespace AssetTracking.DataAccess
             modelBuilder.ApplyConfiguration(new  AssetTypeConfig());
             modelBuilder.ApplyConfiguration(new  AssetConfig());
 
-
-
-
         }
     }
 

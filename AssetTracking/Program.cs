@@ -87,6 +87,11 @@ namespace AssetTracking
             }
             Console.WriteLine("Enter password");
             var passwordInput = Console.ReadLine();
+            if (passwordInput == "c")
+            {
+                Console.Clear();
+                PageLogin();
+            }
             bool isSuccesful = Repository.CreateUser(nameInput, passwordInput);
             if (!isSuccesful)
             {
@@ -195,10 +200,13 @@ namespace AssetTracking
         public static void PageDeleteOffice()
         {
             Header("Delete office");
+          
             Console.WriteLine(string.Format("Enter the id of the office you want to delete"));
+
             foreach (Office o in Repository.AllOffices())
                 Console.WriteLine(string.Format("{0}) {1}",o.Id, o.Location));
             var enteredId = Convert.ToInt32(Console.ReadLine());
+           
             Repository.DeleteOffice(enteredId);
             Console.WriteLine("The office was deleted succesfully.");
             Console.WriteLine("Press any key to return to main menu");
